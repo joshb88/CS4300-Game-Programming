@@ -13,11 +13,38 @@ int main(int argc, char* argv[]) {
 
     std::ifstream config_file{"config.txt"};
 
+    if (!config_file) {
+        std::cerr << "Coudn't open the config file." << std::endl;
+        return -1;
+    }
+
+    std::string line;
+    int width, height;
+    bool windowSizeFound = false;
+    
+    while(std::getline(config_file, line)) {
+        std::istringstream iss(line);
+        std::string key;
+
+        iss >> key;
+
+        if (key == "Window") {
+            iss >> width >> height;
+            windowSizeFound = true;
+        }
+    }
+    
+    if (!windowSizeFound) {
+        std::cout << "No config settings for Window Size; using default (800x600)" << std::endl;
+        width, height = 800, 600;
+    }
+    const int wWidth = width, wHeight = height;
+
     // create a new window of size w*h pixels
     // top left of the window is (0,0) and bottom right is (w, h)
     // you will have to read these from the config file
-    const int wWidth = 1280;
-    const int wHeight = 720;
+    // const int wWidth = 1280;
+    // const int wHeight = 720;
     sf::RenderWindow window(sf::VideoMode({ wWidth, wHeight }), "SFML works!");
     window.setFramerateLimit(60); // limit frame rate to 60 fps
 
