@@ -54,7 +54,7 @@ target_link_libraries(ImGui-SFML PUBLIC
 )
 
 # =========================================================
-#  Your main executable
+#  Main executable
 # =========================================================
 add_executable(Assignment1 src/main.cpp)
 
