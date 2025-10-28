@@ -10,6 +10,9 @@
 #include "imgui-SFML.h"
 
 int main(int argc, char* argv[]) {
+
+    std::ifstream config_file{"config.txt"};
+
     // create a new window of size w*h pixels
     // top left of the window is (0,0) and bottom right is (w, h)
     // you will have to read these from the config file
@@ -51,7 +54,7 @@ int main(int argc, char* argv[]) {
     sf::Font myFont;
 
     // attempt to load the font from a file
-    if (!myFont.openFromFile("fonts/tech.ttf")) {
+    if (!myFont.openFromFile("fonts/PressStart2P.ttf")) {
         // if we can't load the font, print and error and exit
         std::cerr << "Could not load the font" << std::endl;
         return -1;
