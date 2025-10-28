@@ -1,8 +1,9 @@
 // #include <print>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <memory>
-#include <fstream>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -11,7 +12,7 @@
 
 int main(int argc, char* argv[]) {
 
-    std::ifstream config_file{"config.txt"};
+    std::ifstream config_file("./Assignment 1/bin/config.txt");
 
     if (!config_file) {
         std::cerr << "Coudn't open the config file." << std::endl;
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::string line;
-    int width, height;
+    unsigned int width, height;
     bool windowSizeFound = false;
     
     while(std::getline(config_file, line)) {
@@ -36,9 +37,10 @@ int main(int argc, char* argv[]) {
     
     if (!windowSizeFound) {
         std::cout << "No config settings for Window Size; using default (800x600)" << std::endl;
-        width, height = 800, 600;
+        width = 800;
+        height = 600;
     }
-    const int wWidth = width, wHeight = height;
+    const unsigned int wWidth = width, wHeight = height;
 
     // create a new window of size w*h pixels
     // top left of the window is (0,0) and bottom right is (w, h)
@@ -81,7 +83,7 @@ int main(int argc, char* argv[]) {
     sf::Font myFont;
 
     // attempt to load the font from a file
-    if (!myFont.openFromFile("fonts/PressStart2P.ttf")) {
+    if (!myFont.openFromFile("./Assignment 1/bin/fonts/PressStart2P.ttf")) {
         // if we can't load the font, print and error and exit
         std::cerr << "Could not load the font" << std::endl;
         return -1;
