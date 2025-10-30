@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/exe)
 
 # =========================================================
 #  Fetch SFML automatically (no manual setup needed)
@@ -72,10 +72,10 @@ add_custom_command(
     TARGET Assignment1 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Assignment1>/fonts"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/bin/fonts"
+        "${CMAKE_CURRENT_SOURCE_DIR}/bin/fonts"
         "$<TARGET_FILE_DIR:Assignment1>/fonts"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/bin/config.txt"
+        "${CMAKE_CURRENT_SOURCE_DIR}/bin/config.txt"
         "$<TARGET_FILE_DIR:Assignment1>/config.txt"
 )
 
