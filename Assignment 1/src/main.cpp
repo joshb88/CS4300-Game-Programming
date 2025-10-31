@@ -228,8 +228,6 @@ int main(int argc, char* argv[]) {
                 rect->setSize({ rect_size.x, rect_size.x });
             }
             ImGui::Checkbox("Square", &shape_selected.is_square);
-
-            
         }
 
         sf::Color shape_color{(shape_selected.shape->getFillColor())};
