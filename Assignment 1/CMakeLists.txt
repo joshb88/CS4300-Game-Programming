@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/exe)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 # =========================================================
 #  Fetch SFML automatically (no manual setup needed)
@@ -80,20 +80,26 @@ add_custom_command(
 )
 
 # =========================================================
-#  Windows only: copy SFML DLLs (if they exist locally)
+#  Windows (UCRT64) — copy SFML & runtime DLLs
 # =========================================================
 if(WIN32)
-    file(GLOB SFML_DLLS
-        "C:/Programming_Libraries/CPP_Libraries/SFML-3.0.2/bin/*.dll"
+    set(UCRT64_BIN "C:/msys64/ucrt64/bin")
+
+    file(GLOB UCRT_DLLS
+        "${UCRT64_BIN}/sfml-graphics.dll"
+        "${UCRT64_BIN}/sfml-window.dll"
+        "${UCRT64_BIN}/sfml-system.dll"
+        "${UCRT64_BIN}/libstdc++-6.dll"
+        "${UCRT64_BIN}/libgcc_s_seh-1.dll"
+        "${UCRT64_BIN}/libwinpthread-1.dll"
     )
-    if(SFML_DLLS)
-        add_custom_command(
-            TARGET Assignment1 POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${SFML_DLLS}
-                $<TARGET_FILE_DIR:Assignment1>
-        )
-    endif()
+
+    add_custom_command(
+        TARGET Assignment1 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${UCRT_DLLS}
+            $<TARGET_FILE_DIR:Assignment1>
+    )
 endif()
 
 # =========================================================
