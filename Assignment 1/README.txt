@@ -113,7 +113,7 @@ Assignment Hints
 
   shape.getLocalBounds(); // .top, .left, .width, .height
   - gives the LOCAL position of the (top, left) of the rectangle
-  - LOCAL pos means it is relativel to shape.getPosition(), not the window
+  - LOCAL pos means it is relative to shape.getPosition(), not the window
   - as well as the (width, height) size of the rectangle
 
   shape.getGlobalBounds() will take into account any scale, translation, etc
