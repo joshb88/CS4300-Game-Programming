@@ -238,8 +238,9 @@ int main(int argc, char* argv[]) {
             (float)shape_color.g / 255.0f, 
             (float)shape_color.b / 255.0f 
         };
-
+        
         ImGui::ColorEdit3("Color Shape", imgui_shape_color);
+        shape_selected.shape->setFillColor(sf::Color(uint8_t(imgui_shape_color[0]*255), uint8_t(imgui_shape_color[1]*255), uint8_t(imgui_shape_color[2]*255)));
         ImGui::Checkbox("Draw Shape", &shape_selected.visible);
         ImGui::SameLine(); ImGui::Checkbox("Show Text", &shape_selected.text_visible);
         if (ImGui::Button("Reset Shape")) {
@@ -248,16 +249,6 @@ int main(int argc, char* argv[]) {
         ImGui::End();
 
         for (shapeData& current_shape : shape_list) {
-            // imgui uses 0-1 float for colors, sfml uses 0-255 for colors
-            // we must convert from the ui floats to sfml Uint8
-            sf::Color shape_color{(current_shape.shape->getFillColor())};
-            float imgui_shape_color[3] = { 
-                (float)shape_color.r / 255.0f, 
-                (float)shape_color.g / 255.0f, 
-                (float)shape_color.b / 255.0f 
-            };
-
-            current_shape.shape->setFillColor(sf::Color(uint8_t(imgui_shape_color[0]*255), uint8_t(imgui_shape_color[1]*255), uint8_t(imgui_shape_color[2]*255)));
     
             // basic animation - move each frame if it's still in frame
             current_shape.shape->setPosition({ current_shape.shape->getPosition().x + current_shape.speed[0], current_shape.shape->getPosition().y + current_shape.speed[1] });
