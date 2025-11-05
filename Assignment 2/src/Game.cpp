@@ -15,6 +15,65 @@ void Game::init(const std::string& path)
     // TODO: read in config file here
     //       use the premade PlayerConfig, EnemyConfig, BulletConfig variables
 
+    std::fstream file(".assets/config.txt");
+    std::string line;
+
+    while(std::getline(file, line)) {
+        std::istringstream iss;
+        std::string key;
+
+        iss >> key;
+
+        if (key == "Window") {
+            // do window
+        }
+        else if (key == "Font") {
+            // do font
+        }
+        else if (key == "Player") {
+            iss >> m_playerConfig.SR 
+                >> m_playerConfig.CR 
+                >> m_playerConfig.FR 
+                >> m_playerConfig.FG 
+                >> m_playerConfig.FB 
+                >> m_playerConfig.OR 
+                >> m_playerConfig.OG 
+                >> m_playerConfig.OB 
+                >> m_playerConfig.OT 
+                >> m_playerConfig.V 
+                >> m_playerConfig.S;
+        }
+        else if (key == "Enemy") {
+            iss >> m_enemyConfig.SR
+                >> m_enemyConfig.CR
+                >> m_enemyConfig.OR
+                >> m_enemyConfig.OG
+                >> m_enemyConfig.OB
+                >> m_enemyConfig.OT
+                >> m_enemyConfig.VMIN
+                >> m_enemyConfig.VMAX
+                >> m_enemyConfig.L
+                >> m_enemyConfig.SI
+                >> m_enemyConfig.SMIN
+                >> m_enemyConfig.SMAX;
+        }
+        else if (key == "Bullet") {
+            // do bullet
+            iss >> m_bulletConfig.SR
+                >> m_bulletConfig.CR
+                >> m_bulletConfig.FR
+                >> m_bulletConfig.FG
+                >> m_bulletConfig.FB
+                >> m_bulletConfig.OR
+                >> m_bulletConfig.OG
+                >> m_bulletConfig.OB
+                >> m_bulletConfig.OT
+                >> m_bulletConfig.V 
+                >>m_bulletConfig.L 
+                >>m_bulletConfig.S;
+        }
+    }
+
     //set up default window parameters
     m_window.create(sf::VideoMode({ 1280, 720 }), "Assignment 2");
     m_window.setKeyRepeatEnabled(false);

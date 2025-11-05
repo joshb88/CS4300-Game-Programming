@@ -1,11 +1,11 @@
 #include <SFML/Graphics.hpp>
-
-#include "Game.h"
+// #include "Game.h"
+#include <iostream>
+#include "Vec2.hpp"
+#include <cassert>
 
 int main()
 {
-    // test Vec2
-
-    Game g("config.txt");
-    g.run();
+    // Game g("config.txt");
+    // g.run();
 }
