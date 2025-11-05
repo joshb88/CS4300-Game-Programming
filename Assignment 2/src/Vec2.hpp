@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <math.h>
+#include <iostream>
 
 template <typename T>
 class Vec2
@@ -34,73 +35,80 @@ class Vec2
 
     Vec2 operator + (const Vec2& rhs) const
     {
-        // TODO
-        return Vec2();
+        return Vec2(x + rhs.x, y + rhs.y);
     }
 
     Vec2 operator - (const Vec2& rhs) const
     {
-        // TODO
-        return Vec2();
+        return Vec2(x - rhs.x, y - rhs.y);
     }
 
     Vec2 operator / (const T val) const
     {
-        // TODO
-        return Vec2();
+        return Vec2(x / val, y / val);
     }
 
     Vec2 operator * (const T val) const
     {
-        // TODO
-        return Vec2();
+        return Vec2(x * val, y * val);
     }
 
     bool operator == (const Vec2& rhs) const
     {
-        // TODO
-        return false;
+        return (x == rhs.x && y == rhs.y);
     }
 
     bool operator != (const Vec2& rhs) const
     {
-        // TODO
-        return false;
+        return (x != rhs.x || y != rhs.y);
     }
 
     void operator += (const Vec2& rhs)
     {
-        // TODO
+        x += rhs.x;
+        y += rhs.y;
     }
 
     void operator -= (const Vec2& rhs)
     {
-        // TODO
+        x -= rhs.x;
+        y -= rhs.y;
     }
 
     void operator *= (const T val)
     {
-        // TODO
+        x *= val;
+        y *= val;
     }
 
     void operator /= (const T val)
     {
-        // TODO
+        x /= val;
+        y /= val;
     }
 
     float dist(const Vec2& rhs) const
     {
-        // TODO
+        float dx = x - rhs.x;
+        float dy = y - rhs.y;
+        return std::sqrt((dx * dx + dy * dy));
     }
 
-    float length(const Vec2& rhs) const
+    float length() const
     {
-        // TODO
+        return(std::sqrt(x * x + y * y));
     }
 
     void normalize()
     {
-        // TODO
+        float len = length();
+        x /= len;
+        y /= len;
+    }
+
+    void print()
+    {
+        std::cout << "(" << x << ", " << y << ")" << std::endl;
     }
 
 };
