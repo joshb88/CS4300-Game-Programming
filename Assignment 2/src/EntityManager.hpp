@@ -2,6 +2,7 @@
 
 #include "Entity.hpp"
 #include <map>
+#include <algorithm>
 
 using EntityVec = std::vector<std::shared_ptr<Entity>>;
 using EntityMap = std::map<std::string, EntityVec>;
@@ -15,8 +16,10 @@ class EntityManager
 
     void removeDeadEntities(EntityVec& vec)
     {
-        // TODO
-        // Remove all entities from vec that are not alive
+        vec.erase(
+            std::remove_if(vec.begin(), vec.end(),
+                [](const auto& e) {return !e || !e->isAlive();}),
+            vec.end());
     }
 
 public:
