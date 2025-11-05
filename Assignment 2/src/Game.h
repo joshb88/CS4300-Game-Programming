@@ -34,7 +34,7 @@ class Game
     void sUserInput();                      // System: User input
     void sLifespan();                       // System: Lifespan
     void sRender();                         // System: Render / Drawing
-    void sGui();                            
+    void sGUI();                            
     void sEnemySpawner();                   // System: Spawns Enemies
     void sCollision();                      // System: Collision
 
@@ -48,7 +48,7 @@ class Game
 
 public:
 
-    Game(const std::string& config) // constructor, takes in game config
+    Game(const std::string& config); // constructor, takes in game config
 
     void run();    
 };

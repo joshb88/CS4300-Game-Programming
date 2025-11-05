@@ -1,13 +1,15 @@
 #include "Game.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 Game::Game(const std::string & config)
     : m_text(m_font, "Default", 24)
 {
     init(config);
 }
-\
+
 void Game::init(const std::string& path)
 {
     // TODO: read in config file here
@@ -101,7 +103,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
 }
 
 // spawns a bullet from a given entity to a target location
-void Game::spawnBullet(std::shared_ptr<Entity> entity, Vec2f& target)
+void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f& target)
 {
     // TODO: implement the spawning of a bullet which travels toward target
     //       - bullet speed is given as a scalar speed
