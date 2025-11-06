@@ -8,6 +8,7 @@
 #include "imgui-SFML.h"
 #include "imgui_stdlib.h"
 
+struct WindowConfig { int W, H, FL; bool FS; };
 struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
 struct EnemyConfig  { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
 struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
@@ -18,6 +19,7 @@ class Game
     EntityManager m_entities;   // vector of entities to maintain
     sf::Font m_font;            // the font we will use to draw
     sf::Text m_text;            // the score text to be drawn to the screen
+    WindowConfig m_windowConfig;
     PlayerConfig m_playerConfig;
     EnemyConfig m_enemyConfig;
     BulletConfig m_bulletConfig;
