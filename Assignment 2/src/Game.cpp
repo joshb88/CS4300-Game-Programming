@@ -31,7 +31,15 @@ void Game::init(const std::string& path)
                 >> m_windowConfig.FS;
         }
         else if (key == "Font") {
-            // do font
+            iss >> m_fontConfig.P 
+                >> m_fontConfig.S 
+                >> m_fontConfig.R 
+                >> m_fontConfig.G 
+                >> m_fontConfig.B;
+            if (!m_font.openFromFile(m_fontConfig.P)) {
+                std::cerr << "Couldn't load font from path in config, exiting..." << std:: endl;
+                std::exit(-1);
+            }
         }
         else if (key == "Player") {
             iss >> m_playerConfig.SR 
@@ -61,7 +69,6 @@ void Game::init(const std::string& path)
                 >> m_enemyConfig.SMAX;
         }
         else if (key == "Bullet") {
-            // do bullet
             iss >> m_bulletConfig.SR
                 >> m_bulletConfig.CR
                 >> m_bulletConfig.FR
@@ -137,8 +144,10 @@ void Game::spawnPlayer()
     //Give this entity a Transform so it spawns at (200, 200) with a velocity of (1, 1) and angle 0
     e->add<CTransform>(Vec2f(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f);
 
+    e->add<CCollision>(m_playerConfig.CR);
+
     // The entity's shape will have radius 32, 8 sides, dark grey fill, and red outline of thickness 4
-    e->add<CShape>(32.0f, 8, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f);
+    e->add<CShape>(m_playerConfig.SR, m_playerConfig.V, sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB), sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB), m_playerConfig.OT);
 
     // Add an input component to the player so that we can use inputs
     e->add<CInput>();
@@ -185,7 +194,7 @@ void Game::sMovement()
     // TODO: implement all entity movement in this function
     //       you should read the m_player->cInput component to determine if the player is moving
 
-    // Sameple movement speed update for the player
+    // Sample movement speed update for the player
     auto& transform = player()->get<CTransform>();
     transform.pos.x += transform.velocity.x;
     transform.pos.y += transform.velocity.y;

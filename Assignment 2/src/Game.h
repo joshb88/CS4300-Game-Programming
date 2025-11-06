@@ -9,6 +9,18 @@
 #include "imgui_stdlib.h"
 
 struct WindowConfig { int W, H, FL; bool FS; };
+struct FontConfig   { std::string P; int S, R, G, B; };
+/*
+Player Specification:
+Player SR CR S FR FG FB OR OG OB OT V
+Shape Radius       SR          int
+Collision Radius   CR          int
+Speed              S           float
+Fill Color         FR,FG,FB    int,int, int
+Outline Color      OR,0G,OB    int, int, int
+Outline Thickness  OT          int
+Shape Vertices     V           int
+*/ 
 struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
 struct EnemyConfig  { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
 struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
@@ -20,6 +32,7 @@ class Game
     sf::Font m_font;            // the font we will use to draw
     sf::Text m_text;            // the score text to be drawn to the screen
     WindowConfig m_windowConfig;
+    FontConfig m_fontConfig;
     PlayerConfig m_playerConfig;
     EnemyConfig m_enemyConfig;
     BulletConfig m_bulletConfig;
