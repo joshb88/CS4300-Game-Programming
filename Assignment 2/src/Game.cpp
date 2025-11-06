@@ -20,7 +20,7 @@ void Game::init(const std::string& path)
         std::cerr << "Couldn't open config, exiting..." << std::endl;
         std::exit(-1);
     }
-    
+
     std::string line;
 
     while(std::getline(file, line)) {
@@ -257,7 +257,10 @@ void Game::sGUI()
 
 void Game::sRender()
 {
-    if (!m_window.isOpen()) { return; }
+    if (!m_window.isOpen()) {
+        std::cerr << "The window didn't open, exiting..." << std::endl;
+        std::exit(-1);
+    }
 
     // TODO: change the code below to draw ALL of the entities
     //       sample drawing of the player Entity we have created
@@ -301,7 +304,7 @@ void Game::sUserInput()
         if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
             // print out the key that was pressed to the console
-            std::cout << "Key pressed = " << int(keyPressed->scancode) << '\n';
+            std::cout << "Key pressed = " << (std::string)sf::Keyboard::getDescription(keyPressed->scancode) << '\n';
 
             if (keyPressed->scancode == sf::Keyboard::Scancode::W)
             {
@@ -314,7 +317,7 @@ void Game::sUserInput()
         if (const auto* keyPressed = event->getIf<sf::Event::KeyReleased>())
         {
             // print out the key that was pressed to the console
-            std::cout << "Key released = " << int(keyPressed->scancode) << '\n';
+            std::cout << "Key released = " << (std::string)sf::Keyboard::getDescription(keyPressed->scancode) << '\n';
             
             if (keyPressed->scancode == sf::Keyboard::Scancode::W)
             {
