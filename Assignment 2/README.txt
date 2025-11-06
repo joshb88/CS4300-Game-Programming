@@ -134,6 +134,16 @@ Font F S R G B
   Font Size         S        int
   RGB Color         (R,G,B)  int, int, int
 
+Player Specification:
+Player SR CR S FR FG FB OR OG OB OT V
+Shape Radius       SR          int
+Collision Radius   CR          int
+Speed              S           float
+Fill Color         FR,FG,FB    int,int, int
+Outline Color      OR,OG,OB    int, int, int
+Outline Thickness  OT          int
+Shape Vertices     V           int
+
 Enemy Specification:
 Enemy SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
   Shape Radius          SR              int
