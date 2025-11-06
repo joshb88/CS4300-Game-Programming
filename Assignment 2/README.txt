@@ -121,7 +121,7 @@ font format, player, bullet specification, and enemy specifications.
 Lines will be given in that order, with the following syntax:
 
 
-Window WH FL FS
+Window W H FL FS
 - This line declares that the SFML Window must be constructed with width W
   and height H, each of which will be integers. FL is the frame limit that the
   window should be set to, and FS will be an integer which specifies whether to
@@ -168,7 +168,7 @@ I recommend approaching this assignment in the following order:
 1. Implement the Vec2 class, which you will use for all Components
 2. At some point, implement EntityManager::removeDeadEntities()
 3. Implement basics of the Game class:
-   a. Construct a player Entity using the spawn Player() function
+   a. Construct a player Entity using the spawnPlayer() function
    b. Implement basic drawing of entities using the Game::sRender() function 
    c. Construct some enemies using the spawnEnemy() function
    d. Construct a bullet using the spawnBullet() function

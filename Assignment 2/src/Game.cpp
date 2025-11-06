@@ -25,7 +25,10 @@ void Game::init(const std::string& path)
         iss >> key;
 
         if (key == "Window") {
-            // do window
+            iss >> m_windowConfig.W
+                >> m_windowConfig.H
+                >> m_windowConfig.FL
+                >> m_windowConfig.FS;
         }
         else if (key == "Font") {
             // do font
@@ -75,11 +78,14 @@ void Game::init(const std::string& path)
     }
 
     //set up default window parameters
-    m_window.create(sf::VideoMode({ 1280, 720 }), "Assignment 2");
+    m_window.create(sf::VideoMode({ m_windowConfig.W, m_windowConfig.H }), "Assignment 2");
     m_window.setKeyRepeatEnabled(false);
-    m_window.setFramerateLimit(60);
+    m_window.setFramerateLimit(m_windowConfig.FL);
  
-    if (!ImGui::SFML::Init(m_window)) {}
+    if (!ImGui::SFML::Init(m_window)) {
+        std::cerr << "Could not initialize window; exiting..." << std::endl;
+        std::exit(-1);
+    }
     
     // scale the imgui ui and text size by 2
     ImGui::GetStyle().ScaleAllSizes(2.0f);
@@ -268,13 +274,13 @@ void Game::sUserInput()
         ImGui::SFML::ProcessEvent(m_window, *event);
 
         // this event triggers when the window is closed
-        if (event->is<sf::Event::Closed())
+        if (event->is<sf::Event::Closed>())
         {
             std::exit(0);
         }
 
         // this event is triggered when a key is pressed
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed())
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
             // print out the key that was pressed to the console
             std::cout << "Key pressed = " << int(keyPressed->scancode) << '\n';
@@ -287,7 +293,7 @@ void Game::sUserInput()
         }
 
         // this event is triggered when a key is released
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyReleased())
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyReleased>())
         {
             // print out the key that was pressed to the console
             std::cout << "Key released = " << int(keyPressed->scancode) << '\n';
@@ -299,7 +305,7 @@ void Game::sUserInput()
             }
         }
 
-        if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed())
+        if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
         {
             Vec2f mpos(mousePressed->position);
             if (mousePressed->button == sf::Mouse::Button::Left)
