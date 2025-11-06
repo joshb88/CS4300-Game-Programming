@@ -41,7 +41,7 @@ public:
         removeDeadEntities(m_entities);
 
         // remove dead entities from each vector in the entity map
-        // C++20 way of iterating throug [key, value] pairs in a map
+        // C++20 way of iterating through [key, value] pairs in a map
         for (auto& [tag, entityVec] : m_entityMap)
         {
             removeDeadEntities(entityVec);
@@ -50,10 +50,11 @@ public:
 
     std::shared_ptr<Entity> addEntity(const std::string& tag)
     {
-        auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
+        // auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
+        auto entity = std::make_shared<Entity>(m_totalEntities++, tag, Entity::Token{});
         m_entitiesToAdd.push_back(entity);
         return entity;
-    }   
+    }
     
     const EntityVec& getEntities() const
     {

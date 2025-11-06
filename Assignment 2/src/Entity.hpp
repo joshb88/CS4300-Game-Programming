@@ -24,12 +24,16 @@ class Entity
     const std::string m_tag = "default";
     size_t m_id = 0;
 
-    Entity(size_t id, const std::string& tag)
-        : m_id(id)
-        , m_tag(tag)
-    {}
+    struct Token{};
+
+    Entity() = delete;
 
 public:
+    Entity(size_t id, const std::string& tag, Token)
+    : m_id(id)
+    , m_tag(tag)
+    {}
+
     bool isAlive() const
     {
         return m_alive;
