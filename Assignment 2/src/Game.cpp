@@ -15,11 +15,16 @@ void Game::init(const std::string& path)
     // TODO: read in config file here
     //       use the premade PlayerConfig, EnemyConfig, BulletConfig variables
 
-    std::fstream file(".assets/config.txt");
+    std::fstream file("./assets/config.txt");
+    if (!file) {
+        std::cerr << "Couldn't open config, exiting..." << std::endl;
+        std::exit(-1);
+    }
+    
     std::string line;
 
     while(std::getline(file, line)) {
-        std::istringstream iss;
+        std::istringstream iss(line);
         std::string key;
 
         iss >> key;
@@ -40,6 +45,10 @@ void Game::init(const std::string& path)
                 std::cerr << "Couldn't load font from path in config, exiting..." << std:: endl;
                 std::exit(-1);
             }
+            m_text.setFont(m_font);
+            m_text.setString("Score: ");
+            m_text.setCharacterSize(m_fontConfig.S);
+            m_text.setFillColor(sf::Color({(uint8_t)m_fontConfig.R, (uint8_t)m_fontConfig.G, (uint8_t)m_fontConfig.B}));
         }
         else if (key == "Player") {
             iss >> m_playerConfig.SR 

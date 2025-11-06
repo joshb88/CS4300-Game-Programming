@@ -8,7 +8,7 @@
 #include "imgui-SFML.h"
 #include "imgui_stdlib.h"
 
-struct WindowConfig { int W, H, FL; bool FS; };
+struct WindowConfig { unsigned int W, H, FL; bool FS; };
 struct FontConfig   { std::string P; int S, R, G, B; };
 /*
 Player Specification:
