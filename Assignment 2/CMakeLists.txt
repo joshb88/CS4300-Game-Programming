@@ -34,7 +34,10 @@ FetchContent_Declare(ImGui-SFML
     SYSTEM)
 FetchContent_MakeAvailable(ImGui-SFML)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} 
+    src/main.cpp
+    src/Game.cpp
+)
 # target_compile_features(main PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
 target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/misc/cpp)
