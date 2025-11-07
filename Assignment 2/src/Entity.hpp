@@ -12,7 +12,8 @@ using ComponentTuple = std::tuple<
     CCollision,
     CInput,
     CScore,
-    CLifespan
+    CLifespan,
+    CWeapon
 >;
 
 class Entity
@@ -80,13 +81,9 @@ public:
         return std::get<T>(m_components);
     }
 
-
     template<typename T>
     void remove()
     {
-        get<T>() = T();
+        get<T>().exists = false;
     }
 };
-
-
-

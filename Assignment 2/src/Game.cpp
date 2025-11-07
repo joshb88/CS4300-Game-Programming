@@ -51,17 +51,17 @@ void Game::init(const std::string& path)
             m_text.setFillColor(sf::Color({(uint8_t)m_fontConfig.R, (uint8_t)m_fontConfig.G, (uint8_t)m_fontConfig.B}));
         }
         else if (key == "Player") {
-            iss >> m_playerConfig.SR 
-                >> m_playerConfig.CR 
-                >> m_playerConfig.FR 
-                >> m_playerConfig.FG 
-                >> m_playerConfig.FB 
-                >> m_playerConfig.OR 
-                >> m_playerConfig.OG 
-                >> m_playerConfig.OB 
-                >> m_playerConfig.OT 
-                >> m_playerConfig.V 
-                >> m_playerConfig.S;
+            iss >> m_playerConfig.SR
+                >> m_playerConfig.CR
+                >> m_playerConfig.S
+                >> m_playerConfig.FR
+                >> m_playerConfig.FG
+                >> m_playerConfig.FB
+                >> m_playerConfig.OR
+                >> m_playerConfig.OG
+                >> m_playerConfig.OB
+                >> m_playerConfig.OT
+                >> m_playerConfig.V;
         }
         else if (key == "Enemy") {
             iss >> m_enemyConfig.SR
@@ -94,7 +94,7 @@ void Game::init(const std::string& path)
     }
 
     //set up default window parameters
-    m_window.create(sf::VideoMode({ m_windowConfig.W, m_windowConfig.H }), "Assignment 2");
+    m_window.create(sf::VideoMode({ m_windowConfig.W, m_windowConfig.H }), "Assignment 2", sf::Style::Default, (sf::State)m_windowConfig.FS);
     m_window.setKeyRepeatEnabled(false);
     m_window.setFramerateLimit(m_windowConfig.FL);
  
@@ -151,7 +151,7 @@ void Game::spawnPlayer()
     auto e = m_entities.addEntity("player");
 
     //Give this entity a Transform so it spawns at (200, 200) with a velocity of (1, 1) and angle 0
-    e->add<CTransform>(Vec2f(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f);
+    e->add<CTransform>(Vec2f(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f, m_playerConfig.S);
 
     e->add<CCollision>(m_playerConfig.CR);
 
@@ -204,9 +204,22 @@ void Game::sMovement()
     //       you should read the m_player->cInput component to determine if the player is moving
 
     // Sample movement speed update for the player
+    // auto& transform = player()->get<CTransform>();
+    // transform.pos.x += transform.velocity.x;
+    // transform.pos.y += transform.velocity.y;
+
     auto& transform = player()->get<CTransform>();
-    transform.pos.x += transform.velocity.x;
-    transform.pos.y += transform.velocity.y;
+    auto& input = player()->get<CInput>();
+
+    Vec2f dir{(float)input.right - (float)input.left,
+              (float)input.down - (float)input.up};
+
+    if (dir.x != 0.f || dir.y != 0.f) {
+        dir.normalize();
+    }
+
+    transform.velocity = dir * player()->get<CTransform>().speed; // this should be stored in transform most likely
+    transform.pos += transform.velocity;
 }
 
 void Game::sLifespan()
@@ -284,61 +297,12 @@ void Game::sRender()
 
 void Game::sUserInput()
 {
-    // TODO: handle user input here
-    //       note that you should only be setting the player's input compenent variables here
-    //       you should not implement the player's movement logic here
-    //       the movement system will read the the variables you set in this function
+    auto& input = player()->get<CInput>();
 
-    while (auto event = m_window.pollEvent())
-    {
-        // pass the event to imgui to be parsed
-        ImGui::SFML::ProcessEvent(m_window, *event);
-
-        // this event triggers when the window is closed
-        if (event->is<sf::Event::Closed>())
-        {
-            std::exit(0);
-        }
-
-        // this event is triggered when a key is pressed
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-        {
-            // print out the key that was pressed to the console
-            std::cout << "Key pressed = " << (std::string)sf::Keyboard::getDescription(keyPressed->scancode) << '\n';
-
-            if (keyPressed->scancode == sf::Keyboard::Scancode::W)
-            {
-                // TODO: set player's input component UP to true
-                std::cout << "W Key Pressed\n";
-            }
-        }
-
-        // this event is triggered when a key is released
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyReleased>())
-        {
-            // print out the key that was pressed to the console
-            std::cout << "Key released = " << (std::string)sf::Keyboard::getDescription(keyPressed->scancode) << '\n';
-            
-            if (keyPressed->scancode == sf::Keyboard::Scancode::W)
-            {
-                // TODO: set player's input component UP to false
-                std::cout << "W Key Released\n";
-            }
-        }
-
-        if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
-        {
-            Vec2f mpos(mousePressed->position);
-            if (mousePressed->button == sf::Mouse::Button::Left)
-            {
-                // TODO: call spawn bullet here
-                std::cout << "Left Mouse (" << mpos.x << ", " << mpos.y << ")\n";
-            }
-            else if (mousePressed->button == sf::Mouse::Button::Right)
-            {
-                // TODO: call special weapon here
-                std::cout << "Right Mouse (" << mpos.x << ", " << mpos.y << ")\n";
-            }
-        }
-    }
+    input.up = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+    input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
+    input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
+    input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
+    input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    // input.special = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
 }

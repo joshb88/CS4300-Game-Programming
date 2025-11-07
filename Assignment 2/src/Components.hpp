@@ -15,10 +15,13 @@ class CTransform : public Component
         Vec2f pos{0.0, 0.0};
         Vec2f velocity{0.0, 0.0};
         float angle = 0;
+        float speed = 0;
 
         CTransform() = default;
         CTransform(const Vec2f & p, const Vec2f & v, float a)
             : pos(p), velocity(v), angle(a){}
+        CTransform(const Vec2f & p, const Vec2f & v, float a, float s)
+            : pos(p), velocity(v), angle(a), speed(s) {}
         
 };
   
@@ -79,4 +82,16 @@ class CInput : public Component
         bool shoot = false;
 
         CInput() = default;
+};
+
+class CWeapon : public Component
+{
+    public:
+        float fire_rate{0.25};
+        float time_since_shot{0.0f};
+        bool auto_fire = false;
+
+        CWeapon() = default;
+        CWeapon(float fire_rate, bool auto_fire)
+            : fire_rate(fire_rate), auto_fire(auto_fire) {}
 };
