@@ -4,6 +4,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <random>
+#include <chrono>
+
 Game::Game(const std::string & config)
     : m_text(m_font, "Default", 24)
 {
@@ -161,14 +164,45 @@ void Game::spawnPlayer()
     // Add an input component to the player so that we can use inputs
     e->add<CInput>();
 
+    // Add a weapon component for auto firing or powerups (if we feel like it later)
+    e->add<CWeapon>();
+
 }
 
 // spawn an enemy at a random position
 void Game::spawnEnemy()
 {
+    bool shouldSpawnEnemy = (!m_entities.getEntities("enemy").empty() && (m_currentFrame - m_lastEnemySpawnTime) > m_enemyConfig.SI);
+    if (!shouldSpawnEnemy) {return;}
+    // unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    unsigned seed = 12345;
+    std::default_random_engine rng(seed);
+    std::uniform_int_distribution<int> rand_255(0U, 255U);
+    std::uniform_int_distribution<int> rand_verts(m_enemyConfig.VMIN, m_enemyConfig.VMAX);
+
+    unsigned fr = rand_255(rng), fg = rand_255(rng), fb = rand_255(rng);
+    unsigned vertices = rand_verts(rng);
+
     // TODO: make sure the enemy is spawned properly with the m_enemyConfig variables
     // the enemy must be spawned completely within the bounds of the window
-    //
+    auto enemy = m_entities.addEntity("enemy");
+
+    enemy->add<CShape>(
+        m_enemyConfig.SR,
+        vertices,
+        sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), 
+        sf::Color(fr, fg, fb), 
+        m_enemyConfig.OT);
+
+
+    std::uniform_int_distribution<int> distx(m_enemyConfig.SR, m_window.getSize().x - m_enemyConfig.SR);
+    std::uniform_int_distribution<int> disty(m_enemyConfig.SR, m_window.getSize().y - m_enemyConfig.SR);
+    unsigned rand_x = distx(rng);
+    unsigned rand_y = disty(rng);
+
+    // enemy->add<CTransform>(Vec2f(rand_x, rand_y));
+    // enemy->
+
 
     // record when the most recent enemy was spawned
     m_lastEnemySpawnTime = m_currentFrame;

@@ -153,7 +153,7 @@ Enemy SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
   Outline Thickness     OT              int
   Min/Max Vertices      VMIN, VMAX      int, int
   Small Lifespan        L               int
-  Spawn Interval        SP              int
+  Spawn Interval        SI              int
 
 
 Bullet Specification:
