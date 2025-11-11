@@ -69,6 +69,8 @@ void Game::init(const std::string& path)
         else if (key == "Enemy") {
             iss >> m_enemyConfig.SR
                 >> m_enemyConfig.CR
+                >> m_enemyConfig.SMIN
+                >> m_enemyConfig.SMAX
                 >> m_enemyConfig.OR
                 >> m_enemyConfig.OG
                 >> m_enemyConfig.OB
@@ -76,9 +78,7 @@ void Game::init(const std::string& path)
                 >> m_enemyConfig.VMIN
                 >> m_enemyConfig.VMAX
                 >> m_enemyConfig.L
-                >> m_enemyConfig.SI
-                >> m_enemyConfig.SMIN
-                >> m_enemyConfig.SMAX;
+                >> m_enemyConfig.SI;
         }
         else if (key == "Bullet") {
             iss >> m_bulletConfig.SR
@@ -141,6 +141,11 @@ void Game::run()
         // increment the current frame
         // may need to be moved when pause implemented
         m_currentFrame++;
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
+            std::cout << "Exiting..." << std::endl;
+            std::exit(0);
+        }
     }
 }
 
@@ -154,7 +159,7 @@ void Game::spawnPlayer()
     auto e = m_entities.addEntity("player");
 
     //Give this entity a Transform so it spawns at (200, 200) with a velocity of (1, 1) and angle 0
-    e->add<CTransform>(Vec2f(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f, m_playerConfig.S);
+    e->add<CTransform>(Vec2f(m_window.getSize().x / 2, m_window.getSize().y / 2), Vec2f(1.0f, 1.0f), 0.0f, m_playerConfig.S);
 
     e->add<CCollision>(m_playerConfig.CR);
 
@@ -172,10 +177,10 @@ void Game::spawnPlayer()
 // spawn an enemy at a random position
 void Game::spawnEnemy()
 {
-    bool shouldSpawnEnemy = (!m_entities.getEntities("enemy").empty() && (m_currentFrame - m_lastEnemySpawnTime) > m_enemyConfig.SI);
-    if (!shouldSpawnEnemy) {return;}
-    // unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    unsigned seed = 12345;
+    auto enemy = m_entities.addEntity("enemy");
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    // unsigned seed = 12345;
     std::default_random_engine rng(seed);
     std::uniform_int_distribution<int> rand_255(0U, 255U);
     std::uniform_int_distribution<int> rand_verts(m_enemyConfig.VMIN, m_enemyConfig.VMAX);
@@ -183,26 +188,46 @@ void Game::spawnEnemy()
     unsigned fr = rand_255(rng), fg = rand_255(rng), fb = rand_255(rng);
     unsigned vertices = rand_verts(rng);
 
-    // TODO: make sure the enemy is spawned properly with the m_enemyConfig variables
-    // the enemy must be spawned completely within the bounds of the window
-    auto enemy = m_entities.addEntity("enemy");
-
     enemy->add<CShape>(
         m_enemyConfig.SR,
         vertices,
-        sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), 
-        sf::Color(fr, fg, fb), 
+        sf::Color(fr, fg, fb),
+        sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB),
         m_enemyConfig.OT);
 
+    // nvm, being lazy
+    // // dont spawn the mobs on top of the player
+    // unsigned rand_x, rand_y;
+    // do
+    // {
+    //     std::uniform_int_distribution<int> distx(m_enemyConfig.SR, m_window.getSize().x - m_enemyConfig.SR);
+    //     std::uniform_int_distribution<int> disty(m_enemyConfig.SR, m_window.getSize().y - m_enemyConfig.SR);
+    //     rand_x = distx(rng);
+    //     rand_y = disty(rng);
+    // } while (rand_x == player()->get<CShape>().circle.getPosition().x && rand_y == player()->get<CShape>().circle.getPosition().y);
+    
+    // safe bounds
+    int minX = std::max(m_enemyConfig.SR, 0);
+    int maxX = std::max(minX + 1, (int)m_window.getSize().x - m_enemyConfig.SR);
+    int minY = std::max(m_enemyConfig.SR, 0);
+    int maxY = std::max(minY + 1, (int)m_window.getSize().y - m_enemyConfig.SR);
 
-    std::uniform_int_distribution<int> distx(m_enemyConfig.SR, m_window.getSize().x - m_enemyConfig.SR);
-    std::uniform_int_distribution<int> disty(m_enemyConfig.SR, m_window.getSize().y - m_enemyConfig.SR);
+    std::uniform_int_distribution<int> distx(minX, maxX);
+    std::uniform_int_distribution<int> disty(minY, maxY);
     unsigned rand_x = distx(rng);
     unsigned rand_y = disty(rng);
+    std::uniform_real_distribution<float> dist_speed(m_enemyConfig.SMIN, m_enemyConfig.SMAX);
+    float rand_speed = dist_speed(rng);
+    std::uniform_real_distribution<float> dist_velox(-1, 1);
+    std::uniform_real_distribution<float> dist_veloy(-1, 1);
+    float rand_velox = dist_velox(rng);
+    float rand_veloy = dist_veloy(rng);
 
-    // enemy->add<CTransform>(Vec2f(rand_x, rand_y));
-    // enemy->
+    enemy->add<CTransform>(Vec2f(rand_x, rand_y), Vec2f(rand_velox, rand_veloy), 0.0f, rand_speed);
 
+    enemy->add<CScore>(vertices * 100);
+
+    enemy->add<CCollision>(m_enemyConfig.CR);
 
     // record when the most recent enemy was spawned
     m_lastEnemySpawnTime = m_currentFrame;
@@ -242,18 +267,25 @@ void Game::sMovement()
     // transform.pos.x += transform.velocity.x;
     // transform.pos.y += transform.velocity.y;
 
-    auto& transform = player()->get<CTransform>();
-    auto& input = player()->get<CInput>();
-
-    Vec2f dir{(float)input.right - (float)input.left,
-              (float)input.down - (float)input.up};
-
-    if (dir.x != 0.f || dir.y != 0.f) {
-        dir.normalize();
+    for (auto& entity : m_entities.getEntities()) {
+        auto& transform = entity->get<CTransform>();
+        if (entity->tag() == "player") {
+            auto& input = entity->get<CInput>();
+            Vec2f dir{(float)input.right - (float)input.left,
+                      (float)input.down - (float)input.up};
+            
+            if (dir.x != 0.f || dir.y != 0.f) {
+                dir.normalize();
+            }
+            transform.velocity = dir * entity->get<CTransform>().speed; // this should be stored in transform most likely
+        }
+        else {
+            transform.velocity.normalize();
+            transform.velocity *= entity->get<CTransform>().speed;
+        }
+        
+        transform.pos += transform.velocity;
     }
-
-    transform.velocity = dir * player()->get<CTransform>().speed; // this should be stored in transform most likely
-    transform.pos += transform.velocity;
 }
 
 void Game::sLifespan()
@@ -291,6 +323,10 @@ void Game::sCollision()
 void Game::sEnemySpawner()
 {
     // TODO: code which emplements enemy spawning should go here
+    bool shouldSpawnEnemy = ((m_currentFrame - m_lastEnemySpawnTime) >= m_enemyConfig.SI);
+    if (!shouldSpawnEnemy) {return;}
+    spawnEnemy();
+
 }
 
 void Game::sGUI()
@@ -309,19 +345,28 @@ void Game::sRender()
         std::exit(-1);
     }
 
-    // TODO: change the code below to draw ALL of the entities
-    //       sample drawing of the player Entity we have created
     m_window.clear();
 
+    for (const auto& entity : m_entities.getEntities()) {
+        if (!entity->has<CShape>() || !entity->has<CTransform>()) {continue;}
+        entity->get<CShape>().circle.setPosition(entity->get<CTransform>().pos);
+        entity->get<CTransform>().angle += 1.0f;
+        entity->get<CShape>().circle.setRotation(sf::degrees(entity->get<CTransform>().angle));
+        m_window.draw(entity->get<CShape>().circle);
+    }
+
+    // TODO: change the code below to draw ALL of the entities
+    //       sample drawing of the player Entity we have created
     // set the position of the shape based on the entity's transform->pos
-    player()->get<CShape>().circle.setPosition(player()->get<CTransform>().pos);
+    // player()->get<CShape>().circle.setPosition(player()->get<CTransform>().pos);
 
-    // set the rotation of the shape based on the entity's transform->angle
-    player()->get<CTransform>().angle += 1.0f;
-    player()->get<CShape>().circle.setRotation(sf::degrees(player()->get<CTransform>().angle));
 
-    // draw the entity's sf::CircleShape
-    m_window.draw(player()->get<CShape>().circle);
+    // // set the rotation of the shape based on the entity's transform->angle
+    // player()->get<CTransform>().angle += 1.0f;
+    // player()->get<CShape>().circle.setRotation(sf::degrees(player()->get<CTransform>().angle));
+
+    // // draw the entity's sf::CircleShape
+    // m_window.draw(player()->get<CShape>().circle);
 
     // draw the ui last
     ImGui::SFML::Render(m_window);
@@ -337,6 +382,6 @@ void Game::sUserInput()
     input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
     input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
     input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
-    input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    // input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     // input.special = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
 }

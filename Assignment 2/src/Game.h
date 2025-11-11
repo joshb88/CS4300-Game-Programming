@@ -22,8 +22,32 @@ Outline Thickness  OT          int
 Shape Vertices     V           int
 */ 
 struct PlayerConfig { int SR, CR; float S; int FR, FG, FB, OR, OG, OB, OT, V; };
-struct EnemyConfig  { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; };
-struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
+/*
+Enemy Specification:
+Enemy SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
+  Shape Radius          SR              int
+  Collision Radius      CR              int
+  Min / Max Speed       SMIN, SMAX      float, float
+  Outline Color         OR, OG, OB      int, int, int
+  Outline Thickness     OT              int
+  Min/Max Vertices      VMIN, VMAX      int, int
+  Small Lifespan        L               int
+  Spawn Interval        SI              int
+*/
+struct EnemyConfig  { int SR, CR; float SMIN, SMAX; int OR, OG, OB, OT, VMIN, VMAX, L, SI; };
+/*
+Bullet Specification:
+Bullet SR CRS FR FG FB OR OG OB OT V L
+Shape Radius            SR              int
+Collision Radius        CR              int
+Speed                   S               float
+Fill Color              FR, FG, FB      int, int, int
+Outline Color           OR, OG, OB      int, int, int
+Outline Thickness       OT              int
+Shape Vertices          V               int
+Lifespan                L               int
+*/
+struct BulletConfig { int SR, CR; float S; int FR, FG, FB, OR, OG, OB, OT, V, L; };
 
 class Game
 {
