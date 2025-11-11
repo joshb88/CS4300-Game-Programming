@@ -250,6 +250,23 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f& target)
     // TODO: implement the spawning of a bullet which travels toward target
     //       - bullet speed is given as a scalar speed
     //       - you must set the velocity by using the formula in notes
+    auto bullet = m_entities.addEntity("bullet");
+
+    
+    bullet->add<CShape>(m_bulletConfig.SR, m_bulletConfig.V, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
+    
+    bullet->add<CCollision>(m_bulletConfig.CR);
+    
+    Vec2f destination = sf::Mouse::getPosition(m_window);
+    Vec2f origin = player()->get<CShape>().circle.getPosition();
+    Vec2f velo = destination - origin;
+    velo.normalize();
+    float speed = m_bulletConfig.S;
+    velo *= speed;
+
+    bullet->add<CTransform>(origin, velo, 0.0f, speed);
+
+    bullet->add<CLifespan>(m_bulletConfig.L);
 }
 
 void Game::spawnSpecialWeapon(std::shared_ptr<Entity> entity)
@@ -293,12 +310,34 @@ void Game::sLifespan()
     // TODO: implement all lifespan functionality
     //
     // for all entities
-    //     if entity has no lifespane component, skip it
-    //     if entity has > 0 remaining lifespan, subtract 1
-    //     if it has lifespan and is alive
-    //         scale its alpha channel properly
-    //     if it has lifespan and its time is up
-    //         destroy the entity
+    for (auto& entity : m_entities.getEntities()) {
+        // if entity has no lifespane component, skip it
+        if (!entity->has<CLifespan>()) {continue;}
+        // if entity has > 0 remaining lifespan, subtract 1
+        if (entity->get<CLifespan>().remaining > 0) {
+            entity->get<CLifespan>().remaining--;
+            // if it has lifespan and is alive
+            if (entity->isAlive()) {
+                // scale its alpha channel properly
+                float tot{entity->get<CLifespan>().lifespan};
+                float rem{entity->get<CLifespan>().remaining};
+                float alpha{rem/tot * 255};
+                auto& shape{entity->get<CShape>().circle};
+                shape.setFillColor(sf::Color(
+                    shape.getFillColor().r,
+                    shape.getFillColor().g,
+                    shape.getFillColor().b,
+                    alpha
+                ));
+            }
+        } 
+        // if it has lifespan and its time is up
+        else {
+            // destroy the entity
+            entity->destroy();
+        }
+
+    }
 }
 
 void Game::sCollision()

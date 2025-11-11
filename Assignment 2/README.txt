@@ -157,7 +157,7 @@ Enemy SR CR SMIN SMAX OR OG OB OT VMIN VMAX L SI
 
 
 Bullet Specification:
-Bullet SR CRS FR FG FB OR OG OB OT V L
+Bullet SR CR S FR FG FB OR OG OB OT V L
 Shape Radius            SR              int
 Collision Radius        CR              int
 Speed                   S               float
