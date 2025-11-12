@@ -136,6 +136,11 @@ void Game::run()
             if (event->is<sf::Event::Closed>()) {
                 m_window.close();
             }
+            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scancode::P)
+                    m_paused = !m_paused;
+            }
         }
 
         // update the entity manager
@@ -145,12 +150,12 @@ void Game::run()
         ImGui::SFML::Update(m_window, m_deltaClock.restart());
 
         if (!player()->isAlive()) { spawnPlayer(); }
-        if (m_gameConfig.sUserInput) { sUserInput(); }
-        if (m_gameConfig.sEnemySpawner) { sEnemySpawner(); }
-        if (m_gameConfig.sShoot) { sShoot(); }
-        if (m_gameConfig.sMovement) { sMovement(); }
-        if (m_gameConfig.sLifespan) { sLifespan(); }
-        if (m_gameConfig.sCollision) { sCollision(); }
+        if (m_gameConfig.sUserInput && !m_paused) { sUserInput(); }
+        if (m_gameConfig.sEnemySpawner && !m_paused) { sEnemySpawner(); }
+        if (m_gameConfig.sShoot && !m_paused) { sShoot(); }
+        if (m_gameConfig.sMovement && !m_paused) { sMovement(); }
+        if (m_gameConfig.sLifespan && !m_paused) { sLifespan(); }
+        if (m_gameConfig.sCollision && !m_paused) { sCollision(); }
         sGUI();
         sRender();
 

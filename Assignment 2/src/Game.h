@@ -52,10 +52,10 @@ struct BulletConfig { int SR, CR; float S; int FR, FG, FB, OR, OG, OB, OT, V, L;
 
 class Game
 {
-    sf::RenderWindow m_window;  // the window we will draw to
-    EntityManager m_entities;   // vector of entities to maintain
-    sf::Font m_font;            // the font we will use to draw
-    sf::Text m_text;            // the score text to be drawn to the screen
+    sf::RenderWindow m_window;             // the window we will draw to
+    EntityManager m_entities;              // vector of entities to maintain
+    sf::Font m_font;                       // the font we will use to draw
+    sf::Text m_text;                       // the score text to be drawn to the screen
     GameConfig m_gameConfig;
     WindowConfig m_windowConfig;
     FontConfig m_fontConfig;
@@ -66,7 +66,7 @@ class Game
     int m_score = 0;
     int m_currentFrame = 0;
     int m_lastEnemySpawnTime = 0;
-    bool m_paused = false;      // whether we update game logic
+    bool m_paused = false;                  // whether we update game logic
 
     void init(const std::string& config);   // initialize the GameState with a config file
     void setPaused(bool paused);            // paused the game
