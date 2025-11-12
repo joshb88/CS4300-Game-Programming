@@ -87,11 +87,10 @@ class CInput : public Component
 class CWeapon : public Component
 {
     public:
-        float fire_rate{0.25};
+        float fire_rate{0.25f};
         float time_since_shot{0.0f};
-        bool auto_fire = false;
 
         CWeapon() = default;
-        CWeapon(float fire_rate, bool auto_fire)
-            : fire_rate(fire_rate), auto_fire(auto_fire) {}
+        CWeapon(float fire_rate)
+            : fire_rate(fire_rate) {}
 };

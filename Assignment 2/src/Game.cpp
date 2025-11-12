@@ -83,6 +83,7 @@ void Game::init(const std::string& path)
         else if (key == "Bullet") {
             iss >> m_bulletConfig.SR
                 >> m_bulletConfig.CR
+                >>m_bulletConfig.S
                 >> m_bulletConfig.FR
                 >> m_bulletConfig.FG
                 >> m_bulletConfig.FB
@@ -91,8 +92,7 @@ void Game::init(const std::string& path)
                 >> m_bulletConfig.OB
                 >> m_bulletConfig.OT
                 >> m_bulletConfig.V 
-                >>m_bulletConfig.L 
-                >>m_bulletConfig.S;
+                >>m_bulletConfig.L; 
         }
     }
 
@@ -132,9 +132,11 @@ void Game::run()
         ImGui::SFML::Update(m_window, m_deltaClock.restart());
 
         sUserInput();
-        sEnemySpawner();
+        // sEnemySpawner();
+        // sShoot();
         sMovement();
-        sCollision();
+        // sLifespan();
+        // sCollision();
         sGUI();
         sRender();
 
@@ -252,14 +254,15 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f& target)
     //       - you must set the velocity by using the formula in notes
     auto bullet = m_entities.addEntity("bullet");
 
-    
-    bullet->add<CShape>(m_bulletConfig.SR, m_bulletConfig.V, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
+    bullet->add<CShape>(m_bulletConfig.SR, m_bulletConfig.V, 
+        sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), 
+        sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), 
+        m_bulletConfig.OT);
     
     bullet->add<CCollision>(m_bulletConfig.CR);
     
-    Vec2f destination = sf::Mouse::getPosition(m_window);
-    Vec2f origin = player()->get<CShape>().circle.getPosition();
-    Vec2f velo = destination - origin;
+    Vec2f origin = entity->get<CShape>().circle.getPosition();
+    Vec2f velo = target - origin;
     velo.normalize();
     float speed = m_bulletConfig.S;
     velo *= speed;
@@ -295,8 +298,7 @@ void Game::sMovement()
                 dir.normalize();
             }
             transform.velocity = dir * entity->get<CTransform>().speed; // this should be stored in transform most likely
-        }
-        else {
+        } else {
             transform.velocity.normalize();
             transform.velocity *= entity->get<CTransform>().speed;
         }
@@ -319,9 +321,9 @@ void Game::sLifespan()
             // if it has lifespan and is alive
             if (entity->isAlive()) {
                 // scale its alpha channel properly
-                float tot{entity->get<CLifespan>().lifespan};
-                float rem{entity->get<CLifespan>().remaining};
-                float alpha{rem/tot * 255};
+                int tot{entity->get<CLifespan>().lifespan};
+                int rem{entity->get<CLifespan>().remaining};
+                float alpha{(float)rem/(float)tot * 255};
                 auto& shape{entity->get<CShape>().circle};
                 shape.setFillColor(sf::Color(
                     shape.getFillColor().r,
@@ -421,6 +423,28 @@ void Game::sUserInput()
     input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
     input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
     input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
-    // input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+
+    input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+    if (input.shoot) {
+        std::cout << "Left button pressed at (" << sf::Mouse::getPosition(m_window).x << ", " << sf::Mouse::getPosition(m_window).y << ")." << std::endl;
+    }    
+
     // input.special = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
+}
+
+void Game::sShoot()
+{
+    for (auto& entity : m_entities.getEntities()) {
+        if (!entity->has<CWeapon>() || !entity->has<CInput>()) {continue;}
+
+        auto& weap = entity->get<CWeapon>();
+
+        // if the user is clicking shoot and bullet's ready
+        if (entity->has<CInput>() && entity->get<CInput>().shoot && weap.time_since_shot >= weap.fire_rate) {
+                spawnBullet(entity, sf::Mouse::getPosition(m_window));
+                weap.time_since_shot = 0.0f;
+        }
+
+        weap.time_since_shot += (1.0f / m_windowConfig.FL);
+    }
 }

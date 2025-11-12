@@ -102,9 +102,13 @@ class Vec2
     void normalize()
     {
         float len = length();
-        if (len != 0) {
+        if (len != 1e-6) {
             x /= len;
             y /= len;
+        }
+        else {
+            x = 0.f;
+            y = 0.f;
         }
     }
 

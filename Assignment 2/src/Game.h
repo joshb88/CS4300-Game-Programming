@@ -76,7 +76,8 @@ class Game
     void sGUI();                            
     void sEnemySpawner();                   // System: Spawns Enemies
     void sCollision();                      // System: Collision
-
+    void sShoot();                          // for shooting
+    
     void spawnPlayer();
     void spawnEnemy();
     void spawnSmallEnemies(std::shared_ptr<Entity> entity);
