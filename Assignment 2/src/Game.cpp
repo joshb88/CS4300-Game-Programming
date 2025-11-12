@@ -140,6 +140,12 @@ void Game::run()
             {
                 if (keyPressed->scancode == sf::Keyboard::Scancode::P)
                     m_paused = !m_paused;
+                    m_gameConfig.sCollision = !m_gameConfig.sCollision;
+                    m_gameConfig.sEnemySpawner = !m_gameConfig.sEnemySpawner;
+                    m_gameConfig.sLifespan = !m_gameConfig.sLifespan;
+                    m_gameConfig.sMovement = !m_gameConfig.sMovement;
+                    m_gameConfig.sShoot = !m_gameConfig.sShoot;
+                    m_gameConfig.sUserInput = !m_gameConfig.sUserInput;
             }
         }
 
