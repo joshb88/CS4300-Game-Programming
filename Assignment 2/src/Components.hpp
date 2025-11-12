@@ -55,6 +55,7 @@ class CScore : public Component
 {
     public:
         int score = 0;
+        int multiplier = 2;
 
         CScore() = default;
         CScore(int s)

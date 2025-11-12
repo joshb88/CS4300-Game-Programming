@@ -45,6 +45,10 @@ class Vec2
 
     Vec2 operator / (const T val) const
     {
+        if (std::abs(val) < 1e-6f) {
+            std::cerr << "Warning: divisor is 0" << std::endl;
+            return Vec2(0, 0);
+        }
         return Vec2(x / val, y / val);
     }
 
@@ -102,11 +106,12 @@ class Vec2
     void normalize()
     {
         float len = length();
-        if (len != 1e-6) {
+        if (len > 1e-6) {
             x /= len;
             y /= len;
         }
         else {
+            std::cerr << "Warning: Length is 0" << std::endl;
             x = 0.f;
             y = 0.f;
         }

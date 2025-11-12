@@ -68,7 +68,7 @@ Enemy (s):
   and N small enemies spawn in its place, where N is the number of vertices
   of the original enemy. Each small enemy must have the same number of
   vertices and color of the original enemy. These small entites travel
-  outward at anglesat a fixed intervals equal to (360 / vertices).
+  outward at angles at a fixed intervals equal to (360 / vertices).
   For example, if the original enemy had 6 sides,  the 6 smaller enemies will
   travel outward in intervals of (360/6) = 60 degrees.
 - Smaller enemies should be given a reasonable speed

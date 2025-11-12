@@ -97,7 +97,8 @@ void Game::init(const std::string& path)
     }
 
     //set up default window parameters
-    m_window.create(sf::VideoMode({ m_windowConfig.W, m_windowConfig.H }), "Assignment 2", sf::Style::Default, (sf::State)m_windowConfig.FS);
+    sf::State state = m_windowConfig.FS ? sf::State::Fullscreen : sf::State::Windowed;
+    m_window.create(sf::VideoMode({ m_windowConfig.W, m_windowConfig.H }), "Assignment 2", sf::Style::Default, state);
     m_window.setKeyRepeatEnabled(false);
     m_window.setFramerateLimit(m_windowConfig.FL);
  
@@ -123,8 +124,18 @@ void Game::run()
     // TODO: add pause functionality in here
     //       some systems should function while paused (rendering)
 
-    while (true)
+    while (m_window.isOpen())
     {
+        while (auto event = m_window.pollEvent()) {
+            // pass the event to imgui to be parse
+            ImGui::SFML::ProcessEvent(m_window, *event);
+
+            // this event triggers when the window is closed
+            if (event->is<sf::Event::Closed>()) {
+                m_window.close();
+            }
+        }
+
         // update the entity manager
         m_entities.update();
 
@@ -132,11 +143,11 @@ void Game::run()
         ImGui::SFML::Update(m_window, m_deltaClock.restart());
 
         sUserInput();
-        // sEnemySpawner();
-        // sShoot();
+        sEnemySpawner();
+        sShoot();
         sMovement();
-        // sLifespan();
-        // sCollision();
+        sLifespan();
+        sCollision();
         sGUI();
         sRender();
 
@@ -174,6 +185,7 @@ void Game::spawnPlayer()
     // Add a weapon component for auto firing or powerups (if we feel like it later)
     e->add<CWeapon>();
 
+    e->add<CScore>();
 }
 
 // spawn an enemy at a random position
@@ -225,11 +237,16 @@ void Game::spawnEnemy()
     float rand_velox = dist_velox(rng);
     float rand_veloy = dist_veloy(rng);
 
-    enemy->add<CTransform>(Vec2f(rand_x, rand_y), Vec2f(rand_velox, rand_veloy), 0.0f, rand_speed);
+    Vec2f velo{Vec2f(rand_velox, rand_veloy)};
+    velo.normalize();
+
+    enemy->add<CTransform>(Vec2f(rand_x, rand_y), velo, 0.0f, rand_speed);
 
     enemy->add<CScore>(vertices * 100);
 
     enemy->add<CCollision>(m_enemyConfig.CR);
+
+    enemy->add<CLifespan>(m_enemyConfig.L);
 
     // record when the most recent enemy was spawned
     m_lastEnemySpawnTime = m_currentFrame;
@@ -241,9 +258,27 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
     // TODO: spawn small enemies at the location of the input enemy e
 
     // when we create the smaller enemy, we have to read the values of the original enemy
+    auto& shape = e->get<CShape>().circle;
+    int verts = shape.getPointCount();
+
+    // for each number of points,
     // - spawn a number of small enemies equal to the vertices of the original enemy
-    // - set each small enemy to the same color as the original, half the size
-    // - small enemies are worth double points of the original enemy
+    for (int i = 0; i < verts; ++i) {
+        Vec2f point_i{ shape.getTransform().transformPoint(shape.getPoint(i)) };
+        Vec2f velo{ point_i - shape.getPosition() };
+        velo.normalize();
+        velo *= (e->get<CTransform>().speed);
+
+        auto se = m_entities.addEntity("smallEnemy");
+
+        // - small enemies are worth double points of the original enemy
+        se->add<CScore>(e->get<CScore>().score * e->get<CScore>().multiplier);
+        se->add<CTransform>(point_i, velo, 0.f);
+        se->add<CCollision>(e->get<CCollision>().radius / 2);
+        // - set each small enemy to the same color as the original, half the size
+        se->add<CShape>(shape.getRadius() / 2, verts, shape.getFillColor(), shape.getOutlineColor(), shape.getOutlineThickness());
+        se->add<CLifespan>(e->get<CLifespan>().lifespan);
+    }
 }
 
 // spawns a bullet from a given entity to a target location
@@ -261,8 +296,11 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f& target)
     
     bullet->add<CCollision>(m_bulletConfig.CR);
     
-    Vec2f origin = entity->get<CShape>().circle.getPosition();
+    auto& shape = entity->get<CShape>().circle;
+    Vec2f topleft{shape.getPosition()};
+    Vec2f origin{topleft + Vec2f{shape.getRadius(), shape.getRadius()}};
     Vec2f velo = target - origin;
+    if (velo.length() < 1e-6f) {std::cerr << "Skipped bullet: target too close." << std::endl; return;};
     velo.normalize();
     float speed = m_bulletConfig.S;
     velo *= speed;
@@ -298,9 +336,6 @@ void Game::sMovement()
                 dir.normalize();
             }
             transform.velocity = dir * entity->get<CTransform>().speed; // this should be stored in transform most likely
-        } else {
-            transform.velocity.normalize();
-            transform.velocity *= entity->get<CTransform>().speed;
         }
         
         transform.pos += transform.velocity;
@@ -310,16 +345,16 @@ void Game::sMovement()
 void Game::sLifespan()
 {
     // TODO: implement all lifespan functionality
-    //
+
     // for all entities
     for (auto& entity : m_entities.getEntities()) {
-        // if entity has no lifespane component, skip it
+        // if entity has no lifespan component, skip it
         if (!entity->has<CLifespan>()) {continue;}
+        entity->get<CLifespan>().remaining -= 1;
         // if entity has > 0 remaining lifespan, subtract 1
         if (entity->get<CLifespan>().remaining > 0) {
-            entity->get<CLifespan>().remaining--;
             // if it has lifespan and is alive
-            if (entity->isAlive()) {
+            if (entity->isAlive() && entity->has<CShape>()) {
                 // scale its alpha channel properly
                 int tot{entity->get<CLifespan>().lifespan};
                 int rem{entity->get<CLifespan>().remaining};
@@ -347,16 +382,61 @@ void Game::sCollision()
     // TODO: Implement all proper collisions between entities
     //       be sure to use the collision radius, NOT the shape radius
 
+    float win_width = (float)m_window.getSize().x;
+    float win_height = (float)m_window.getSize().y;
+    for (auto& e : m_entities.getEntities("enemy")) {
+        auto& transform = e->get<CTransform>();
+        auto& collision = e->get<CCollision>();
+
+        // left
+        if (transform.pos.x - collision.radius < 0.f) {
+            transform.pos.x = collision.radius;
+            transform.velocity.x *= -1.f;
+        // right
+        } else if (transform.pos.x + collision.radius > win_width) {
+            transform.pos.x = win_width - collision.radius;
+            transform.velocity.x *= -1.f;
+        }
+        // top
+        if (transform.pos.y - collision.radius < 0.f) {
+            transform.pos.y = collision.radius;
+            transform.velocity.y *= -1.f;
+        // bottom
+        } else if (transform.pos.y + collision.radius > win_height) {
+            transform.pos.y = win_height - collision.radius;
+            transform.velocity.y *= -1.f;
+        }
+    }
+
     for (auto b : m_entities.getEntities("bullet"))
     {
         for (auto e : m_entities.getEntities("enemy"))
         {
-            // do collision logic
+            float radii_sum{b->get<CCollision>().radius + e->get<CCollision>().radius};
+            Vec2f b_pos{b->get<CShape>().circle.getPosition()};
+            Vec2f e_pos{e->get<CShape>().circle.getPosition()};
+            float dist = b_pos.dist(e_pos);
+            // if the distance between the two shapes 
+            // is less than the sum of their collision radii
+            if (radii_sum > dist) {
+                player()->get<CScore>().score += e->get<CScore>().score;
+                b->destroy();
+                spawnSmallEnemies(e);
+                e->destroy();
+            }
         }
 
         for (auto e : m_entities.getEntities("smallEnemy"))
         {
-            // do collision logic
+            float radii_sum{b->get<CCollision>().radius + e->get<CCollision>().radius};
+            Vec2f b_pos{b->get<CShape>().circle.getPosition()};
+            Vec2f e_pos{e->get<CShape>().circle.getPosition()};
+            float dist = b_pos.dist(e_pos);
+            if (radii_sum > dist) {
+                player()->get<CScore>().score += e->get<CScore>().score;
+                b->destroy();
+                e->destroy();
+            }
         }
     }
 }
@@ -427,7 +507,7 @@ void Game::sUserInput()
     input.shoot = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
     if (input.shoot) {
         std::cout << "Left button pressed at (" << sf::Mouse::getPosition(m_window).x << ", " << sf::Mouse::getPosition(m_window).y << ")." << std::endl;
-    }    
+    }
 
     // input.special = sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
 }
@@ -441,8 +521,12 @@ void Game::sShoot()
 
         // if the user is clicking shoot and bullet's ready
         if (entity->has<CInput>() && entity->get<CInput>().shoot && weap.time_since_shot >= weap.fire_rate) {
-                spawnBullet(entity, sf::Mouse::getPosition(m_window));
-                weap.time_since_shot = 0.0f;
+            auto mpos = sf::Mouse::getPosition(m_window);
+            // sf::Vector2f worldPos = m_window.mapPixelToCoords(mpos);
+            // Vec2f target(worldPos);
+            Vec2f target{m_window.mapPixelToCoords(mpos)};
+            spawnBullet(entity, target);
+            weap.time_since_shot = 0.0f;
         }
 
         weap.time_since_shot += (1.0f / m_windowConfig.FL);
