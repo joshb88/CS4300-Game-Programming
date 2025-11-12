@@ -8,6 +8,7 @@
 #include "imgui-SFML.h"
 #include "imgui_stdlib.h"
 
+struct GameConfig {bool sPlayer = true, sMovement = true, sUserInput = true, sLifespan = true, sEnemySpawner = true, sCollision = true, sShoot = true; };
 struct WindowConfig { unsigned int W, H, FL; bool FS; };
 struct FontConfig   { std::string P; int S, R, G, B; };
 /*
@@ -55,6 +56,7 @@ class Game
     EntityManager m_entities;   // vector of entities to maintain
     sf::Font m_font;            // the font we will use to draw
     sf::Text m_text;            // the score text to be drawn to the screen
+    GameConfig m_gameConfig;
     WindowConfig m_windowConfig;
     FontConfig m_fontConfig;
     PlayerConfig m_playerConfig;

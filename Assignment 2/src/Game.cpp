@@ -108,8 +108,10 @@ void Game::init(const std::string& path)
     }
     
     // scale the imgui ui and text size by 2
-    ImGui::GetStyle().ScaleAllSizes(2.0f);
-    ImGui::GetIO().FontGlobalScale = 2.0f;
+    // ImGui::GetStyle().ScaleAllSizes(2.0f);
+    // ImGui::GetIO().FontGlobalScale = 2.0f;
+    ImGui::GetStyle().ScaleAllSizes(1.0f);
+    ImGui::GetIO().FontGlobalScale = 1.0f;
 
     spawnPlayer();
 }
@@ -142,12 +144,13 @@ void Game::run()
         // required update call to imgui
         ImGui::SFML::Update(m_window, m_deltaClock.restart());
 
-        sUserInput();
-        sEnemySpawner();
-        sShoot();
-        sMovement();
-        sLifespan();
-        sCollision();
+        if (!player()->isAlive()) { spawnPlayer(); }
+        if (m_gameConfig.sUserInput) { sUserInput(); }
+        if (m_gameConfig.sEnemySpawner) { sEnemySpawner(); }
+        if (m_gameConfig.sShoot) { sShoot(); }
+        if (m_gameConfig.sMovement) { sMovement(); }
+        if (m_gameConfig.sLifespan) { sLifespan(); }
+        if (m_gameConfig.sCollision) { sCollision(); }
         sGUI();
         sRender();
 
@@ -453,8 +456,36 @@ void Game::sEnemySpawner()
 void Game::sGUI()
 {
     ImGui::Begin("Geometry Wars");
-
-    ImGui::Text("Stuff Goes Here");
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+    {
+        if (ImGui::BeginTabItem("Systems"))
+        {
+            ImGui::Text("There will be Systems that can turn on and off here");
+            ImGui::Separator();
+            ImGui::Checkbox("Player System",       &m_gameConfig.sPlayer);
+            ImGui::Checkbox("Movement System",     &m_gameConfig.sMovement);
+            ImGui::Checkbox("User Input System",   &m_gameConfig.sUserInput);
+            ImGui::Checkbox("Lifespan System",     &m_gameConfig.sLifespan);
+            ImGui::Checkbox("Enemy Spawner",       &m_gameConfig.sEnemySpawner);
+            ImGui::Checkbox("Collision System",    &m_gameConfig.sCollision);
+            ImGui::Checkbox("Shoot System",        &m_gameConfig.sShoot);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Broccoli"))
+        {
+            ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Cucumber"))
+        {
+            ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+    // ImGui::Separator();
+        
 
     ImGui::End();
 }
@@ -475,6 +506,8 @@ void Game::sRender()
         entity->get<CShape>().circle.setRotation(sf::degrees(entity->get<CTransform>().angle));
         m_window.draw(entity->get<CShape>().circle);
     }
+
+
 
     // TODO: change the code below to draw ALL of the entities
     //       sample drawing of the player Entity we have created
