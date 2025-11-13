@@ -49,9 +49,10 @@ void Game::init(const std::string& path)
                 std::exit(-1);
             }
             m_text.setFont(m_font);
-            m_text.setString("Score: ");
+            m_text.setString("Score: " + m_score);
             m_text.setCharacterSize(m_fontConfig.S);
             m_text.setFillColor(sf::Color({(uint8_t)m_fontConfig.R, (uint8_t)m_fontConfig.G, (uint8_t)m_fontConfig.B}));
+            // m_text.setPosition({m_window.getSize().x / 2 - m_text.getLocalBounds().size.x / 2, 5});
         }
         else if (key == "Player") {
             iss >> m_playerConfig.SR
@@ -138,7 +139,7 @@ void Game::run()
             }
             else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
-                if (keyPressed->scancode == sf::Keyboard::Scancode::P)
+                if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
                     m_paused = !m_paused;
                     m_gameConfig.sCollision = !m_gameConfig.sCollision;
                     m_gameConfig.sEnemySpawner = !m_gameConfig.sEnemySpawner;
@@ -146,6 +147,7 @@ void Game::run()
                     m_gameConfig.sMovement = !m_gameConfig.sMovement;
                     m_gameConfig.sShoot = !m_gameConfig.sShoot;
                     m_gameConfig.sUserInput = !m_gameConfig.sUserInput;
+                }
             }
         }
 
@@ -162,16 +164,16 @@ void Game::run()
         if (m_gameConfig.sMovement && !m_paused) { sMovement(); }
         if (m_gameConfig.sLifespan && !m_paused) { sLifespan(); }
         if (m_gameConfig.sCollision && !m_paused) { sCollision(); }
-        sGUI();
+        if (m_mainMenuUp) { sGUI(); }
         sRender();
+        
 
         // increment the current frame
         // may need to be moved when pause implemented
         m_currentFrame++;
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) {
-            std::cout << "Exiting..." << std::endl;
-            std::exit(0);
+            m_mainMenuUp = true;
         }
     }
 }
@@ -198,8 +200,6 @@ void Game::spawnPlayer()
 
     // Add a weapon component for auto firing or powerups (if we feel like it later)
     e->add<CWeapon>();
-
-    e->add<CScore>();
 }
 
 // spawn an enemy at a random position
@@ -433,7 +433,7 @@ void Game::sCollision()
             // if the distance between the two shapes 
             // is less than the sum of their collision radii
             if (radii_sum > dist) {
-                player()->get<CScore>().score += e->get<CScore>().score;
+                m_score += e->get<CScore>().score;
                 b->destroy();
                 spawnSmallEnemies(e);
                 e->destroy();
@@ -447,7 +447,7 @@ void Game::sCollision()
             Vec2f e_pos{e->get<CShape>().circle.getPosition()};
             float dist = b_pos.dist(e_pos);
             if (radii_sum > dist) {
-                player()->get<CScore>().score += e->get<CScore>().score;
+                m_score += e->get<CScore>().score;
                 b->destroy();
                 e->destroy();
             }
@@ -470,6 +470,43 @@ void Game::sGUI()
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
     {
+        if (ImGui::BeginTabItem("Main Menu"))
+        {
+            static int clicked = 0;
+            const char* buttonText = (clicked & 1) ? "Unpause Game" : "Pause Game";
+
+            if (ImGui::Button(buttonText)) {
+                clicked++;
+                m_paused = !m_paused;
+             }
+            if (ImGui::Button("Exit Game"))
+                ImGui::OpenPopup("Are you sure you want to exit?");
+
+            // Always center this window when appearing
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+            if (ImGui::BeginPopupModal("Are you sure you want to exit?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("All progress will be lost.\nThis operation cannot be undone!");
+                ImGui::Separator();
+
+                //static int unused_i = 0;
+                //ImGui::Combo("Combo", &unused_i, "Delete\0Delete harder\0");
+
+                static bool dont_ask_me_next_time = false;
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
+                ImGui::PopStyleVar();
+
+                if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); std::exit(0);}
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("Systems"))
         {
             ImGui::Text("There will be Systems that can turn on and off here");
@@ -483,16 +520,16 @@ void Game::sGUI()
             ImGui::Checkbox("Shoot System",        &m_gameConfig.sShoot);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Broccoli"))
-        {
-            ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Cucumber"))
-        {
-            ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
-            ImGui::EndTabItem();
-        }
+        // if (ImGui::BeginTabItem("Broccoli"))
+        // {
+        //     ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+        //     ImGui::EndTabItem();
+        // }
+        // if (ImGui::BeginTabItem("Cucumber"))
+        // {
+        //     ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+        //     ImGui::EndTabItem();
+        // }
         ImGui::EndTabBar();
     }
     // ImGui::Separator();
@@ -532,6 +569,13 @@ void Game::sRender()
 
     // // draw the entity's sf::CircleShape
     // m_window.draw(player()->get<CShape>().circle);
+
+    // display score
+    m_text.setString("Score: " + std::to_string(m_score));
+    sf::FloatRect textBounds = m_text.getLocalBounds();
+    m_text.setPosition({(m_window.getSize().x - textBounds.size.x) / 2, 10});
+    m_window.draw(m_text);
+    
 
     // draw the ui last
     ImGui::SFML::Render(m_window);

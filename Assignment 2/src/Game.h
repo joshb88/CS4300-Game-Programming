@@ -67,6 +67,7 @@ class Game
     int m_currentFrame = 0;
     int m_lastEnemySpawnTime = 0;
     bool m_paused = false;                  // whether we update game logic
+    bool m_mainMenuUp = false;
 
     void init(const std::string& config);   // initialize the GameState with a config file
     void setPaused(bool paused);            // paused the game
