@@ -49,7 +49,7 @@ void Game::init(const std::string& path)
                 std::exit(-1);
             }
             m_text.setFont(m_font);
-            m_text.setString("Score: " + m_score);
+            m_text.setString("Score: ");
             m_text.setCharacterSize(m_fontConfig.S);
             m_text.setFillColor(sf::Color({(uint8_t)m_fontConfig.R, (uint8_t)m_fontConfig.G, (uint8_t)m_fontConfig.B}));
             // m_text.setPosition({m_window.getSize().x / 2 - m_text.getLocalBounds().size.x / 2, 5});
